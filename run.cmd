@@ -1,0 +1,1 @@
+py holdem_calc.py 7d 2h -b Jc Qc Kc
