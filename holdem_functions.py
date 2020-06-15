@@ -2,11 +2,18 @@
 suit_index_dict = {"s": 0, "c": 1, "h": 2, "d": 3}
 reverse_suit_index = ("s", "c", "h", "d")
 val_string = "AKQJT98765432"
-hand_rankings = ("High Card", "Pair", "Two Pair", "Three of a Kind",
-                 "Straight", "Flush", "Full House", "Four of a Kind",
-                 "Straight Flush", "Royal Flush")
+hand_rankings = ("High Card",
+                 "Pair",
+                 "Two Pair",
+                 "Three of a Kind",
+                 "Straight",
+                 "Flush",
+                 "Full House",
+                 "Four of a Kind",
+                 "Straight Flush",
+                 "Royal Flush")
 suit_value_dict = {"T": 10, "J": 11, "Q": 12, "K": 13, "A": 14}
-for num in xrange(2, 10):
+for num in range(2, 10):
     suit_value_dict[str(num)] = num
 
 class Card:
@@ -56,7 +63,7 @@ def generate_random_boards(deck, num_iterations, board_length):
     import random
     import time
     random.seed(time.time())
-    for _ in xrange(num_iterations):
+    for _ in range(num_iterations):
         yield random.sample(deck, 5 - board_length)
 
 # Generate all possible boards
@@ -89,6 +96,7 @@ def preprocess_board(flat_board):
         suit_histogram[card.suit_index] += 1
     return suit_histogram, histogram, max(suit_histogram)
 
+
 # Returns tuple: (Is there a straight flush?, high card)
 def detect_straight_flush(suit_board):
     contiguous_length, fail_index = 1, len(suit_board) - 5
@@ -107,7 +115,7 @@ def detect_straight_flush(suit_board):
                     return True, 5
                 break
             contiguous_length = 1
-    return False,
+    return False, 0
 
 # Returns the highest kicker available
 def detect_highest_quad_kicker(histogram_board):
@@ -133,7 +141,7 @@ def detect_straight(histogram_board):
                     return True, 5
                 break
             contiguous_length = 1
-    return False,
+    return False, 0
 
 # Returns tuple of the two highest kickers that result from the three of a kind
 def detect_three_of_a_kind_kickers(histogram_board):
@@ -192,9 +200,9 @@ def detect_hand(hole_cards, given_board, suit_histogram,
             flat_board = list(given_board)
             flat_board.extend(hole_cards)
             suit_board = generate_suit_board(flat_board, flush_index)
-            result = detect_straight_flush(suit_board)
-            if result[0]:
-                return (8, result[1]) if result[1] != 14 else (9,)
+            is_straight, value = detect_straight_flush(suit_board)
+            if is_straight:
+                return (8, value) if value != 14 else (9,)
             return 5, get_high_cards(suit_board)
 
     # Add hole cards to histogram data structure and process it
@@ -247,22 +255,22 @@ def compare_hands(result_list):
         return 0
     return winning_player_index
 
-# Print results
+# print(results)
 def print_results(hole_cards, winner_list, result_histograms):
     float_iterations = float(sum(winner_list))
-    print "Winning Percentages:"
+    print("Winning Percentages:")
     for index, hole_card in enumerate(hole_cards):
         winning_percentage = float(winner_list[index + 1]) / float_iterations
         if hole_card == (None, None):
-            print "(?, ?) : ", winning_percentage
+            print("(?, ?) : ", winning_percentage)
         else:
-            print hole_card, ": ", winning_percentage
-    print "Ties: ", float(winner_list[0]) / float_iterations, "\n"
+            print(hole_card, ": ", winning_percentage)
+    print("Ties: ", float(winner_list[0]) / float_iterations, "\n")
     for player_index, histogram in enumerate(result_histograms):
-        print "Player" + str(player_index + 1) + " Histogram: "
+        print("Player" + str(player_index + 1) + " Histogram: ")
         for index, elem in enumerate(histogram):
-            print hand_rankings[index], ": ", float(elem) / float_iterations
-        print
+            print(hand_rankings[index], ": ", float(elem) / float_iterations)
+        print()
 
 # Returns the winning percentages
 def find_winning_percentage(winner_list):
@@ -285,13 +293,13 @@ def find_winner(generate_boards, deck, hole_cards, num, board_length,
             board.extend(remaining_board)
         else:
             board = remaining_board
+
         # Find the best possible poker hand given the created board and the
         # hole cards and save them in the results data structures
-        suit_histogram, histogram, max_suit = (
-            preprocess_board(board))
+        suit_histogram, histogram, max_suit = (preprocess_board(board))
         for index, hole_card in enumerate(hole_cards):
-            result_list[index] = detect_hand(hole_card, board, suit_histogram,
-                                             histogram, max_suit)
+            result_list[index] = detect_hand(hole_card, board, suit_histogram, histogram, max_suit)
+
         # Find the winner of the hand and tabulate results
         winner_index = compare_hands(result_list)
         winner_list[winner_index] += 1

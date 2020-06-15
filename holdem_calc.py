@@ -1,4 +1,7 @@
+import cProfile
 import time
+import pstats
+
 import holdem_functions
 import holdem_argparser
 
@@ -21,7 +24,7 @@ def run(hole_cards, num, exact, board, file_name, verbose):
             hole_cards, board = holdem_argparser.parse_file_args(line)
             deck = holdem_functions.generate_deck(hole_cards, board)
             run_simulation(hole_cards, num, exact, board, deck, verbose)
-            print "-----------------------------------"
+            print("-----------------------------------")
         input_file.close()
     else:
         deck = holdem_functions.generate_deck(hole_cards, board)
@@ -36,7 +39,7 @@ def run_simulation(hole_cards, num, exact, given_board, deck, verbose):
     # 3) result_list: list of the best possible poker hand for each pair of
     #    hole cards for a given board
     result_histograms, winner_list = [], [0] * (num_players + 1)
-    for _ in xrange(num_players):
+    for _ in range(num_players):
         result_histograms.append([0] * len(holdem_functions.hand_rankings))
     # Choose whether we're running a Monte Carlo or exhaustive simulation
     board_length = 0 if given_board is None else len(given_board)
@@ -46,6 +49,7 @@ def run_simulation(hole_cards, num, exact, given_board, deck, verbose):
         generate_boards = holdem_functions.generate_exhaustive_boards
     else:
         generate_boards = holdem_functions.generate_random_boards
+
     if (None, None) in hole_cards:
         hole_cards_list = list(hole_cards)
         unknown_index = hole_cards.index((None, None))
@@ -68,6 +72,12 @@ def run_simulation(hole_cards, num, exact, given_board, deck, verbose):
     return holdem_functions.find_winning_percentage(winner_list)
 
 if __name__ == '__main__':
-    start = time.time()
-    main()
-    print "\nTime elapsed(seconds): ", time.time() - start
+    # start = time.time()
+    profiler = cProfile.Profile()
+    profiler.runcall(main)
+
+    # stats = pstats.Stats(profiler)
+    # stats.strip_dirs()
+    # stats.sort_stats('cumulative')
+    # stats.print_stats()
+    # print("\nTime elapsed(seconds): ", time.time() - start)
